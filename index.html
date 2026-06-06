@@ -652,7 +652,7 @@
     }
   }
 
-  // ── Polling setiap 6 detik ────────────────────────────────────
+  // ── Polling setiap 8 detik ────────────────────────────────────
   function startPolling() {
     if (pollInterval) clearInterval(pollInterval);
     pollInterval = setInterval(async () => {
@@ -666,7 +666,7 @@
       } catch (e) {
         console.error('Polling error:', e);
       }
-    }, 6000);
+    }, 8000);
   }
 
   // ── Fetch konten & unlock ─────────────────────────────────────
