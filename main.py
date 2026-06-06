@@ -4,14 +4,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from saweriaqris import create_payment_qr, paid_status
 from datetime import datetime, timedelta
-import asyncio
 import threading
 import json
 import os
+import redis
 
 app = FastAPI()
 
-# CORS — izinkan frontend akses backend
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,44 +19,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── File-based session store ─────────────────────────────────────
-# Disimpan di sessions.json agar tidak hilang saat container restart/sleep
-SESSIONS_FILE = "sessions.json"
-sessions_lock = threading.Lock()
+# ─── Vercel KV (Redis) ────────────────────────────────────────────
+# Vercel KV otomatis inject env variable KV_URL saat diconnect di dashboard
+r = redis.from_url(os.environ["KV_URL"])
 
-def load_sessions() -> dict:
-    if not os.path.exists(SESSIONS_FILE):
-        return {}
-    try:
-        with open(SESSIONS_FILE, "r") as f:
-            raw = json.load(f)
-        return {
-            tid: {"paid": data["paid"], "created_at": datetime.fromisoformat(data["created_at"])}
-            for tid, data in raw.items()
-        }
-    except Exception:
-        return {}
+SESSION_TTL_MIN  = 15
+PAID_TTL_HOURS   = 24
 
-def save_sessions(sessions: dict):
-    try:
-        with open(SESSIONS_FILE, "w") as f:
-            json.dump(
-                {tid: {"paid": data["paid"], "created_at": data["created_at"].isoformat()}
-                 for tid, data in sessions.items()},
-                f
-            )
-    except Exception as e:
-        print(f"⚠️ Gagal simpan sessions: {e}")
+SAWERIA_USERNAME = "iwanni"
+DONATION_AMOUNT  = 10000
 
-sessions = load_sessions()
+# ─── Helper ───────────────────────────────────────────────────────
+def get_session(transaction_id: str):
+    raw = r.get(f"session:{transaction_id}")
+    if not raw:
+        return None
+    return json.loads(raw)
 
-# ─── Config ───────────────────────────────────────────────────────
-SAWERIA_USERNAME  = "iwanni"   # ← ganti dengan username Saweria kamu
-DONATION_AMOUNT   = 10000      # ← minimum Rp 10.000 (limit dari Saweria)
-SESSION_TTL_MIN   = 15         # sesi belum bayar kadaluarsa setelah 15 menit
-PAID_TTL_HOURS    = 24         # sesi sudah bayar bertahan 24 jam (persist refresh)
+def set_session(transaction_id: str, data: dict, ttl_seconds: int):
+    r.setex(f"session:{transaction_id}", ttl_seconds, json.dumps(data))
 
-# ─── Konten rahasia — hanya dikirim setelah paid ──────────────────
+# ─── Konten rahasia ───────────────────────────────────────────────
 SECRET_HTML1 = """
 <div class="blur-row">
   <div class="blur-icon">🙏</div>
@@ -115,31 +98,10 @@ SECRET_HTML3 = """
 </div>
 """
 
-# ─── Cleanup expired sessions ─────────────────────────────────────
-def cleanup_sessions():
-    now = datetime.now()
-    with sessions_lock:
-        expired = [
-            tid for tid, data in sessions.items()
-            if (
-                # Belum bayar: expired setelah 15 menit
-                (not data["paid"] and now - data["created_at"] > timedelta(minutes=SESSION_TTL_MIN))
-                or
-                # Sudah bayar: expired setelah 24 jam
-                (data["paid"] and now - data["created_at"] > timedelta(hours=PAID_TTL_HOURS))
-            )
-        ]
-        for tid in expired:
-            del sessions[tid]
-        if expired:
-            save_sessions(sessions)
-
 # ─── Endpoints ────────────────────────────────────────────────────
 
 @app.get("/api/qr")
 async def generate_qr():
-    """Generate QRIS unik per sesi user."""
-    cleanup_sessions()
     try:
         result = create_payment_qr(
             SAWERIA_USERNAME,
@@ -151,12 +113,7 @@ async def generate_qr():
         qr_string      = result[0]
         transaction_id = result[1]
 
-        with sessions_lock:
-            sessions[transaction_id] = {
-                "paid": False,
-                "created_at": datetime.now()
-            }
-            save_sessions(sessions)
+        set_session(transaction_id, {"paid": False}, ttl_seconds=SESSION_TTL_MIN * 60)
 
         return {
             "transactionId": transaction_id,
@@ -169,19 +126,17 @@ async def generate_qr():
 
 @app.post("/api/webhook")
 async def receive_webhook(request: Request):
-    """Terima notifikasi dari Saweria saat donasi berhasil."""
     try:
         body = await request.json()
         transaction_id = body.get("id")
 
         if transaction_id:
-            with sessions_lock:
-                if transaction_id in sessions:
-                    sessions[transaction_id]["paid"] = True
-                    save_sessions(sessions)
-                    print(f"✅ Paid: {transaction_id} | amount: {body.get('amount_raw')}")
-                else:
-                    print(f"⚠️  Webhook masuk tapi session tidak ditemukan: {transaction_id}")
+            session = get_session(transaction_id)
+            if session:
+                set_session(transaction_id, {"paid": True}, ttl_seconds=int(PAID_TTL_HOURS * 3600))
+                print(f"✅ Paid: {transaction_id} | amount: {body.get('amount_raw')}")
+            else:
+                print(f"⚠️  Webhook masuk tapi session tidak ditemukan: {transaction_id}")
 
         return {"ok": True}
     except Exception as e:
@@ -191,38 +146,23 @@ async def receive_webhook(request: Request):
 
 @app.get("/api/status/{transaction_id}")
 async def check_status(transaction_id: str):
-    """Frontend polling: cek apakah transaksi sudah dibayar."""
-    with sessions_lock:
-        session = sessions.get(transaction_id)
-
+    session = get_session(transaction_id)
     if not session:
         return {"paid": False, "expired": True}
-
-    # Belum bayar dan sudah 15 menit → expired
-    if not session["paid"] and datetime.now() - session["created_at"] > timedelta(minutes=SESSION_TTL_MIN):
-        return {"paid": False, "expired": True}
-
     return {"paid": session["paid"], "expired": False}
 
 
 @app.get("/api/content/{transaction_id}")
 async def get_content(transaction_id: str):
-    """Kirim konten rahasia — HANYA kalau transaction_id sudah paid."""
-    with sessions_lock:
-        session = sessions.get(transaction_id)
-
+    session = get_session(transaction_id)
     if not session or not session["paid"]:
         return JSONResponse(status_code=403, content={"error": "Forbidden"})
-
     return {"html1": SECRET_HTML1, "html2": SECRET_HTML2, "html3": SECRET_HTML3}
 
 
-# ─── Serve static files (index.html) ──────────────────────────────
+# ─── Serve static files ───────────────────────────────────────────
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
 
-
-# ─── Run ──────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-
