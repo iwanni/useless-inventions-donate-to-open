@@ -289,8 +289,8 @@
   }
 
   .qr-canvas-wrap {
-    width: 110px;
-    height: 110px;
+    width: 130px;
+    height: 130px;
     background: #fff;
     display: flex;
     align-items: center;
@@ -469,8 +469,6 @@
 
 
 <div class="cv-wrapper">
-  <div class="cv-label">Curriculum Vitae · 2025</div>
-
   <div class="cv-card">
 
     <!-- Stamp -->
@@ -511,7 +509,6 @@
         <div class="qr-canvas-wrap" id="qr-box">
           <div class="qr-loading" id="qr-loading">loading<br>QR...</div>
         </div>
-        <div class="qr-note" id="qr-note">Scan & donasi<br>untuk unlock 🔓</div>
       </div>
     </div>
 
@@ -637,8 +634,8 @@
       wrap.innerHTML = '';
       new QRCode(wrap, {
         text: qrString,
-        width: 98,
-        height: 98,
+        width: 120,
+        height: 120,
         colorDark: '#1a1a1a',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
@@ -698,9 +695,11 @@
       });
 
       document.getElementById('unlocked-badge').classList.add('show');
-      document.getElementById('qr-note').textContent = '✅ CV terbuka!';
+      const qrNote = document.getElementById('qr-note');
+      if (qrNote) qrNote.textContent = '✅ CV terbuka!';
 
       const unlockSection = document.querySelector('.unlock-section');
+      console.log('unlockSection')
       if (unlockSection) {
         unlockSection.style.transition = 'opacity 0.6s ease, max-height 0.6s ease';
         unlockSection.style.overflow = 'hidden';
