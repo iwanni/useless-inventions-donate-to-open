@@ -101,11 +101,19 @@ SECRET_HTML3 = """
 
 @app.get("/debug")
 async def debug():
-    async with httpx.AsyncClient() as client:
+    import httpx
+
+    async with httpx.AsyncClient(
+        follow_redirects=True,
+        headers={
+            "User-Agent": "Mozilla/5.0"
+        }
+    ) as client:
         r = await client.get("https://saweria.co/iwanni")
 
     return {
         "status": r.status_code,
+        "headers": dict(r.headers),
         "body": r.text[:1000]
     }
 
