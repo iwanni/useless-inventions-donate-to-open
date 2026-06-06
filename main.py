@@ -99,6 +99,16 @@ SECRET_HTML3 = """
 
 # ─── Endpoints ────────────────────────────────────────────────────
 
+@app.get("/debug")
+async def debug():
+    async with httpx.AsyncClient() as client:
+        r = await client.get("https://saweria.co/iwanni")
+
+    return {
+        "status": r.status_code,
+        "body": r.text[:1000]
+    }
+
 @app.get("/api/qr")
 async def generate_qr():
     try:
