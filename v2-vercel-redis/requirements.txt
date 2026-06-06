@@ -1,4 +1,6 @@
 fastapi
 uvicorn[standard]
+saweriaqris
 httpx[http2]
+beautifulsoup4
 upstash-redis

@@ -2,7 +2,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from saweriaqris import create_payment_qr, paid_status
+from datetime import datetime, timedelta
 from upstash_redis import Redis
+import json
 import os
 
 app = FastAPI()
@@ -20,9 +23,20 @@ r = Redis(
     token=os.environ["KV_REST_API_TOKEN"]
 )
 
-# ─── Config ───────────────────────────────────────────────────────
-PAID_TTL_SECONDS = 5 * 60  # 5 menit setelah webhook → CV tutup lagi
-GLOBAL_KEY       = "cv_unlocked"
+SESSION_TTL_MIN  = 15
+PAID_TTL_HOURS   = 24
+SAWERIA_USERNAME = "iwanni"
+DONATION_AMOUNT  = 10000
+
+# ─── Helper ───────────────────────────────────────────────────────
+def get_session(transaction_id: str):
+    raw = r.get(f"session:{transaction_id}")
+    if not raw:
+        return None
+    return json.loads(raw) if isinstance(raw, str) else raw
+
+def set_session(transaction_id: str, data: dict, ttl_seconds: int):
+    r.setex(f"session:{transaction_id}", ttl_seconds, json.dumps(data))
 
 # ─── Konten rahasia ───────────────────────────────────────────────
 SECRET_HTML1 = """
@@ -85,17 +99,61 @@ SECRET_HTML3 = """
 
 # ─── Endpoints ────────────────────────────────────────────────────
 
+@app.get("/debug")
+async def debug():
+    import httpx
+
+    async with httpx.AsyncClient(
+        follow_redirects=True,
+        headers={
+            "User-Agent": "Mozilla/5.0"
+        }
+    ) as client:
+        r = await client.get("https://saweria.co/iwanni")
+
+    return {
+        "status": r.status_code,
+        "headers": dict(r.headers),
+        "body": r.text[:1000]
+    }
+
+@app.get("/api/qr")
+async def generate_qr():
+    try:
+        result = create_payment_qr(
+            SAWERIA_USERNAME,
+            DONATION_AMOUNT,
+            "Donatur",
+            "dummy@example.com",
+            "unlock"
+        )
+        qr_string      = result[0]
+        transaction_id = result[1]
+
+        set_session(transaction_id, {"paid": False}, ttl_seconds=SESSION_TTL_MIN * 60)
+
+        return {
+            "transactionId": transaction_id,
+            "qrString": qr_string,
+            "amount": DONATION_AMOUNT
+        }
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
 @app.post("/api/webhook")
 async def receive_webhook(request: Request):
-    """Terima notifikasi dari Saweria → set global unlock selama 5 menit."""
     try:
         body = await request.json()
-        amount = body.get("amount_raw", 0)
-        donator = body.get("donator_name", "someone")
+        transaction_id = body.get("id")
 
-        # Set global key dengan TTL 5 menit
-        r.setex(GLOBAL_KEY, PAID_TTL_SECONDS, "1")
-        print(f"✅ Webhook dari {donator} | amount: {amount} → CV unlocked 5 menit")
+        if transaction_id:
+            session = get_session(transaction_id)
+            if session:
+                set_session(transaction_id, {"paid": True}, ttl_seconds=int(PAID_TTL_HOURS * 3600))
+                print(f"✅ Paid: {transaction_id} | amount: {body.get('amount_raw')}")
+            else:
+                print(f"⚠️  Webhook masuk tapi session tidak ditemukan: {transaction_id}")
 
         return {"ok": True}
     except Exception as e:
@@ -103,23 +161,18 @@ async def receive_webhook(request: Request):
         return {"ok": False, "error": str(e)}
 
 
-@app.get("/api/status")
-async def check_status():
-    """Frontend polling: cek apakah CV sedang unlocked."""
-    unlocked = r.get(GLOBAL_KEY)
-    # Ambil sisa TTL untuk countdown di frontend
-    ttl = r.ttl(GLOBAL_KEY)
-    return {
-        "unlocked": bool(unlocked),
-        "ttl": ttl if ttl and ttl > 0 else 0
-    }
+@app.get("/api/status/{transaction_id}")
+async def check_status(transaction_id: str):
+    session = get_session(transaction_id)
+    if not session:
+        return {"paid": False, "expired": True}
+    return {"paid": session["paid"], "expired": False}
 
 
-@app.get("/api/content")
-async def get_content():
-    """Kirim konten rahasia — HANYA kalau global key ada (masih dalam 5 menit)."""
-    unlocked = r.get(GLOBAL_KEY)
-    if not unlocked:
+@app.get("/api/content/{transaction_id}")
+async def get_content(transaction_id: str):
+    session = get_session(transaction_id)
+    if not session or not session["paid"]:
         return JSONResponse(status_code=403, content={"error": "Forbidden"})
     return {"html1": SECRET_HTML1, "html2": SECRET_HTML2, "html3": SECRET_HTML3}
 
