@@ -6,6 +6,8 @@ from saweriaqris import create_payment_qr, paid_status
 from datetime import datetime, timedelta
 import asyncio
 import threading
+import json
+import os
 
 app = FastAPI()
 
@@ -17,10 +19,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── In-memory store ──────────────────────────────────────────────
-# Format: { transaction_id: { "paid": bool, "created_at": datetime } }
-sessions = {}
+# ─── File-based session store ─────────────────────────────────────
+# Disimpan di sessions.json agar tidak hilang saat container restart/sleep
+SESSIONS_FILE = "sessions.json"
 sessions_lock = threading.Lock()
+
+def load_sessions() -> dict:
+    if not os.path.exists(SESSIONS_FILE):
+        return {}
+    try:
+        with open(SESSIONS_FILE, "r") as f:
+            raw = json.load(f)
+        return {
+            tid: {"paid": data["paid"], "created_at": datetime.fromisoformat(data["created_at"])}
+            for tid, data in raw.items()
+        }
+    except Exception:
+        return {}
+
+def save_sessions(sessions: dict):
+    try:
+        with open(SESSIONS_FILE, "w") as f:
+            json.dump(
+                {tid: {"paid": data["paid"], "created_at": data["created_at"].isoformat()}
+                 for tid, data in sessions.items()},
+                f
+            )
+    except Exception as e:
+        print(f"⚠️ Gagal simpan sessions: {e}")
+
+sessions = load_sessions()
 
 # ─── Config ───────────────────────────────────────────────────────
 SAWERIA_USERNAME  = "iwanni"   # ← ganti dengan username Saweria kamu
@@ -103,6 +131,8 @@ def cleanup_sessions():
         ]
         for tid in expired:
             del sessions[tid]
+        if expired:
+            save_sessions(sessions)
 
 # ─── Endpoints ────────────────────────────────────────────────────
 
@@ -126,6 +156,7 @@ async def generate_qr():
                 "paid": False,
                 "created_at": datetime.now()
             }
+            save_sessions(sessions)
 
         return {
             "transactionId": transaction_id,
@@ -147,6 +178,7 @@ async def receive_webhook(request: Request):
             with sessions_lock:
                 if transaction_id in sessions:
                     sessions[transaction_id]["paid"] = True
+                    save_sessions(sessions)
                     print(f"✅ Paid: {transaction_id} | amount: {body.get('amount_raw')}")
                 else:
                     print(f"⚠️  Webhook masuk tapi session tidak ditemukan: {transaction_id}")
