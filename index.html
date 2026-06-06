@@ -586,7 +586,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 <script>
-  const BACKEND = 'http://localhost:8000';
+  const BACKEND = window.location.origin;
   let pollInterval = null;
 
   // ── Saat halaman load: cek localStorage dulu ──────────────────
