@@ -1,17 +1,15 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from saweriaqris import create_payment_qr, paid_status
 from datetime import datetime, timedelta
-import threading
+from upstash_redis import Redis
 import json
 import os
-import redis
 
 app = FastAPI()
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,13 +17,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Vercel KV (Redis) ────────────────────────────────────────────
-# Vercel KV otomatis inject env variable KV_URL saat diconnect di dashboard
-r = redis.from_url(os.environ["KV_URL"])
+# ─── Upstash Redis ────────────────────────────────────────────────
+r = Redis(
+    url=os.environ["KV_REST_API_URL"],
+    token=os.environ["KV_REST_API_TOKEN"]
+)
 
 SESSION_TTL_MIN  = 15
 PAID_TTL_HOURS   = 24
-
 SAWERIA_USERNAME = "iwanni"
 DONATION_AMOUNT  = 10000
 
@@ -34,7 +33,7 @@ def get_session(transaction_id: str):
     raw = r.get(f"session:{transaction_id}")
     if not raw:
         return None
-    return json.loads(raw)
+    return json.loads(raw) if isinstance(raw, str) else raw
 
 def set_session(transaction_id: str, data: dict, ttl_seconds: int):
     r.setex(f"session:{transaction_id}", ttl_seconds, json.dumps(data))

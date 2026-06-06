@@ -3,4 +3,4 @@ uvicorn[standard]
 saweriaqris
 httpx
 beautifulsoup4
-redis
+upstash-redis
