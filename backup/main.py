@@ -21,7 +21,7 @@ r = Redis(
 )
 
 # ─── Config ───────────────────────────────────────────────────────
-PAID_TTL_SECONDS = 3 * 60  # 3 menit setelah webhook → CV tutup lagi
+PAID_TTL_SECONDS = 5 * 60  # 5 menit setelah webhook → CV tutup lagi
 GLOBAL_KEY       = "cv_unlocked"
 
 # ─── Konten rahasia ───────────────────────────────────────────────
