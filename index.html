@@ -211,6 +211,7 @@
 
   .blur-text {
     flex: 1;
+      word-break: break-all;
   }
 
   .blur-text strong {
@@ -236,12 +237,6 @@
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-  }
-
-  @media (max-width: 769px) {
-      .unlock-section {
-          flex-direction: column;
-      }
   }
 
   .unlock-left h3 {
@@ -503,6 +498,21 @@
   @keyframes unblur {
     from { filter: blur(7px); }
     to { filter: none; }
+  }
+
+  @media (max-width: 769px) {
+      body {
+          padding: 0px;
+      }
+      .cv-header {
+          flex-direction: column;
+      }
+      .unlock-section {
+          flex-direction: column;
+      }
+      .cv-card {
+          padding: 28px 24px;
+      }
   }
 </style>
 </head>
