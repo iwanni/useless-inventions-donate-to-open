@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donate to Unlock - High Level Design</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #070714;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      padding: 20px 0;
+    }
+
+    .poster {
+      width: 1080px;
+      height: 1920px;
+      background: linear-gradient(170deg, #0f0f23 0%, #1a1a35 40%, #12122a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background grid */
+    .poster::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(78, 205, 196, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(78, 205, 196, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Ambient glow */
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      opacity: 0.15;
+    }
+
+    .glow-orb.orange { width: 350px; height: 350px; background: #f7931e; top: 250px; right: 50px; }
+    .glow-orb.blue { width: 400px; height: 400px; background: #2a5298; top: 200px; left: 50px; }
+    .glow-orb.teal { width: 450px; height: 350px; background: #4ecdc4; top: 750px; left: 50%; transform: translateX(-50%); }
+    .glow-orb.red { width: 350px; height: 350px; background: #ee5a52; bottom: 300px; left: 50%; transform: translateX(-50%); }
+
+    /* ===== HEADER ===== */
+    .header {
+      text-align: center;
+      padding: 80px 60px 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .header .badge {
+      display: inline-block;
+      background: rgba(255, 189, 46, 0.12);
+      border: 1px solid rgba(255, 189, 46, 0.25);
+      color: #ffbd2e;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 10px 26px;
+      border-radius: 30px;
+      margin-bottom: 22px;
+    }
+
+    .header h1 {
+      font-size: 48px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .header h1 span {
+      background: linear-gradient(135deg, #4ecdc4, #5b8dee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.45);
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    /* ===== NODES ===== */
+    .node {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 30px;
+      text-align: center;
+      backdrop-filter: blur(12px);
+      z-index: 5;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+
+    .node-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .node-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .node-desc {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 16px;
+    }
+
+    .tag-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .node-tag {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: 'Inter', monospace;
+    }
+
+    /* Node Themes */
+    .node.browser { top: 380px; left: 120px; width: 340px; }
+    .node.browser .node-icon { background: linear-gradient(135deg, #1e3c72, #2a5298); border: 1px solid #5b8dee; }
+    .node.browser .node-tag { background: rgba(91, 141, 238, 0.15); color: #5b8dee; border: 1px solid rgba(91, 141, 238, 0.3); }
+
+    .node.saweria { top: 380px; right: 120px; width: 340px; }
+    .node.saweria .node-icon { background: linear-gradient(135deg, #d35400, #f39c12); border: 1px solid #f1c40f; }
+    .node.saweria .node-tag { background: rgba(243, 156, 18, 0.15); color: #f39c12; border: 1px solid rgba(243, 156, 18, 0.3); }
+
+    .node.fastapi { top: 820px; left: 50%; transform: translateX(-50%); width: 420px; border-color: rgba(78, 205, 196, 0.3); background: rgba(78, 205, 196, 0.05); }
+    .node.fastapi .node-icon { background: linear-gradient(135deg, #0ba360, #3cba92); border: 1px solid #4ecdc4; }
+    .node.fastapi .node-tag { background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); }
+
+    .node.redis { top: 1320px; left: 50%; transform: translateX(-50%); width: 380px; }
+    .node.redis .node-icon { background: linear-gradient(135deg, #cb2d3e, #ef473a); border: 1px solid #ee5a52; }
+    .node.redis .node-tag { background: rgba(238, 90, 82, 0.15); color: #ee5a52; border: 1px solid rgba(238, 90, 82, 0.3); }
+
+
+    /* ===== SVG DIAGRAM ===== */
+    .diagram-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .arrow-path {
+      fill: none;
+      stroke-width: 3;
+      stroke-dasharray: 8 6;
+    }
+
+    .path-1 { stroke: rgba(243, 156, 18, 0.4); } /* Browser -> Saweria */
+    .path-2 { stroke: rgba(78, 205, 196, 0.4); } /* Saweria -> FastAPI */
+    .path-3 { stroke: rgba(238, 90, 82, 0.4); }  /* FastAPI -> Redis */
+    .path-4 { stroke: rgba(91, 141, 238, 0.4); } /* Browser -> FastAPI */
+    .path-5 { stroke: rgba(78, 205, 196, 0.6); } /* FastAPI -> Browser (Success) */
+
+    .arrowhead { opacity: 0.8; }
+
+    /* ===== ARROW LABELS ===== */
+    .step-label {
+      position: absolute;
+      background: rgba(10, 15, 30, 0.95);
+      border-radius: 12px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .step-text {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* Specific Label Colors & Positions */
+    .lbl-1 { top: 415px; left: 540px; transform: translateX(-50%); border: 1.5px solid rgba(243, 156, 18, 0.3); }
+    .lbl-1 .step-num { background: #f39c12; }
+    .lbl-1 .step-text { color: #f39c12; }
+
+    .lbl-2 { top: 680px; right: 280px; border: 1.5px solid rgba(78, 205, 196, 0.3); }
+    .lbl-2 .step-num { background: #4ecdc4; color: #000; }
+    .lbl-2 .step-text { color: #4ecdc4; }
+
+    .lbl-3 { top: 1160px; left: 540px; transform: translateX(-50%); border: 1.5px solid rgba(238, 90, 82, 0.3); }
+    .lbl-3 .step-num { background: #ee5a52; }
+    .lbl-3 .step-text { color: #ee5a52; }
+
+    .lbl-4 { top: 620px; left: 280px; border: 1.5px solid rgba(91, 141, 238, 0.3); }
+    .lbl-4 .step-num { background: #5b8dee; }
+    .lbl-4 .step-text { color: #5b8dee; }
+
+    .lbl-5 { top: 740px; left: 160px; border: 1.5px solid rgba(78, 205, 196, 0.6); background: rgba(78, 205, 196, 0.1); }
+    .lbl-5 .step-num { background: #4ecdc4; color: #000; }
+    .lbl-5 .step-text { color: #fff; }
+
+    /* ===== BOTTOM FEATURES ===== */
+    .features {
+      position: absolute;
+      bottom: 120px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      gap: 20px;
+      z-index: 5;
+    }
+
+    .feature-card {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(5px);
+    }
+
+    .f-icon {
+      font-size: 28px;
+    }
+
+    .f-text h4 {
+      font-size: 15px;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .f-text p {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 28px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .footer-left { font-size: 13px; color: rgba(255, 255, 255, 0.2); }
+    .footer-right { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255, 255, 255, 0.2); }
+    .footer-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ecdc4; animation: footerPulse 2s ease-in-out infinite; }
+
+    @keyframes footerPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  </style>
+</head>
+<body>
+  <div class="poster">
+    <!-- Ambient glows -->
+    <div class="glow-orb blue"></div>
+    <div class="glow-orb orange"></div>
+    <div class="glow-orb teal"></div>
+    <div class="glow-orb red"></div>
+
+    <!-- ===== SVG ARROWS & FLOW ===== -->
+    <svg class="diagram-svg" viewBox="0 0 1080 1920">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+
+      <!-- 1. Browser -> Saweria (Scan QR) -->
+      <path id="path1" class="arrow-path path-1" d="M 460 455 L 620 455" />
+      <polygon points="614,450 626,455 614,460" fill="#f39c12" class="arrowhead" />
+      <circle r="5" fill="#f39c12" filter="url(#glow)">
+        <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#path1" /></animateMotion>
+      </circle>
+
+      <!-- 2. Saweria -> FastAPI (Webhook) -->
+      <path id="path2" class="arrow-path path-2" d="M 790 560 C 790 680, 700 750, 600 820" />
+      <polygon points="606,814 596,823 609,825" fill="#4ecdc4" class="arrowhead" />
+      <circle r="6" fill="#4ecdc4" filter="url(#glow)">
+        <animateMotion dur="2.5s" repeatCount="indefinite"><mpath href="#path2" /></animateMotion>
+      </circle>
+      <circle r="4" fill="#4ecdc4" filter="url(#glow)" opacity="0.6">
+        <animateMotion dur="2.5s" repeatCount="indefinite" begin="1.2s"><mpath href="#path2" /></animateMotion>
+      </circle>
+
+      <!-- 3. FastAPI -> Redis (Set DB) -->
+      <path id="path3" class="arrow-path path-3" d="M 540 1030 L 540 1320" />
+      <polygon points="534,1314 546,1314 540,1326" fill="#ee5a52" class="arrowhead" />
+      <circle r="5" fill="#ee5a52" filter="url(#glow)">
+        <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#path3" /></animateMotion>
+      </circle>
+
+      <!-- 4. Browser -> FastAPI (Polling) -->
+      <path id="path4" class="arrow-path path-4" d="M 290 560 C 290 680, 400 750, 480 820" />
+      <polygon points="471,825 484,823 474,814" fill="#5b8dee" class="arrowhead" />
+      <circle r="5" fill="#5b8dee" filter="url(#glow)">
+        <animateMotion dur="3s" repeatCount="indefinite"><mpath href="#path4" /></animateMotion>
+      </circle>
+      <circle r="3" fill="#5b8dee" filter="url(#glow)" opacity="0.5">
+        <animateMotion dur="3s" repeatCount="indefinite" begin="1.5s"><mpath href="#path4" /></animateMotion>
+      </circle>
+
+      <!-- 5. FastAPI -> Browser (Unlock Response) -->
+      <path id="path5" class="arrow-path path-5" d="M 440 820 C 340 750, 220 680, 220 560" />
+      <polygon points="214,566 226,566 220,554" fill="#4ecdc4" class="arrowhead" />
+      <circle r="6" fill="#fff" filter="url(#glow)">
+        <animateMotion dur="2s" repeatCount="indefinite" begin="0.5s"><mpath href="#path5" /></animateMotion>
+      </circle>
+    </svg>
+
+    <!-- ===== STEP LABELS ===== -->
+    <div class="step-label lbl-1">
+      <div class="step-num">1</div>
+      <div class="step-text">Scan & Bayar</div>
+    </div>
+    <div class="step-label lbl-2">
+      <div class="step-num">2</div>
+      <div class="step-text">POST /webhook</div>
+    </div>
+    <div class="step-label lbl-3">
+      <div class="step-num">3</div>
+      <div class="step-text">Simpan Status + TTL</div>
+    </div>
+    <div class="step-label lbl-4">
+      <div class="step-num">4</div>
+      <div class="step-text">Polling /status</div>
+    </div>
+    <div class="step-label lbl-5">
+      <div class="step-num">5</div>
+      <div class="step-text">Content Unlocked ✅</div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <div class="header">
+      <div class="badge">Architecture Flow</div>
+      <h1>🔓 <span>Donate to Unlock CV</span></h1>
+      <p>Integrasi Saweria Webhook, FastAPI, dan Upstash Redis</p>
+    </div>
+
+    <!-- ===== NODES ===== -->
+
+    <!-- Client Node -->
+    <div class="node browser">
+      <div class="node-icon">🌐</div>
+      <div class="node-title">Browser</div>
+      <div class="node-desc">Halaman CV yang terkunci</div>
+      <div class="tag-container">
+        <span class="node-tag">Frontend</span>
+        <span class="node-tag">Interval 3s</span>
+      </div>
+    </div>
+
+    <!-- Payment Node -->
+    <div class="node saweria">
+      <div class="node-icon">💸</div>
+      <div class="node-title">Saweria</div>
+      <div class="node-desc">QR Static & Payment Gateway</div>
+      <div class="tag-container">
+        <span class="node-tag">QRIS</span>
+        <span class="node-tag">Auto-Trigger</span>
+      </div>
+    </div>
+
+    <!-- Backend Node -->
+    <div class="node fastapi">
+      <div class="node-icon">⚡</div>
+      <div class="node-title">FastAPI Python</div>
+      <div class="node-desc">Deployed on Vercel Serverless</div>
+      <div class="tag-container">
+        <span class="node-tag">POST /api/webhook</span>
+        <span class="node-tag">GET /api/status</span>
+      </div>
+    </div>
+
+    <!-- Database Node -->
+    <div class="node redis">
+      <div class="node-icon">🗄️</div>
+      <div class="node-title">Upstash Redis</div>
+      <div class="node-desc">State Management sementara</div>
+      <div class="tag-container">
+        <span class="node-tag">cv_unlocked: "1"</span>
+        <span class="node-tag">setex TTL 3 min</span>
+      </div>
+    </div>
+
+    <!-- ===== FEATURES ===== -->
+    <div class="features">
+      <div class="feature-card">
+        <div class="f-icon">📡</div>
+        <div class="f-text">
+          <h4>Webhook Trigger</h4>
+          <p>Update real-time dari Saweria</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">⏱️</div>
+        <div class="f-text">
+          <h4>Auto Expire</h4>
+          <p>Akses terkunci otomatis (3 menit)</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">🔄</div>
+        <div class="f-text">
+          <h4>Frontend Polling</h4>
+          <p>Cek status pembayaran tiap 3 detik</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footer-left">Useless Inventions Series · High Level Design</div>
+      <div class="footer-right">
+        <div class="footer-dot"></div>
+        <span>Serverless Architecture</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

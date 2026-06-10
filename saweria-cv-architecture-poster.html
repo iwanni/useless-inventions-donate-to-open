@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saweria CV Unlock — Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:#070714;
+      display:flex; justify-content:center; align-items:flex-start;
+      min-height:100vh; font-family:'Inter',sans-serif; padding:20px 0;
+    }
+    .poster {
+      width:1080px; height:1920px;
+      background:linear-gradient(170deg,#0a0f1e 0%,#111827 45%,#0d1220 100%);
+      position:relative; overflow:hidden;
+    }
+    .poster::before {
+      content:''; position:absolute; inset:0;
+      background-image:
+        linear-gradient(rgba(99,179,237,.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(99,179,237,.03) 1px,transparent 1px);
+      background-size:40px 40px; pointer-events:none;
+    }
+
+    /* GLOW ORBS */
+    .orb { position:absolute; border-radius:50%; filter:blur(100px); pointer-events:none; }
+    .orb-blue  { width:380px;height:380px;background:#2563eb;opacity:.08;top:200px;left:30px; }
+    .orb-green { width:380px;height:380px;background:#059669;opacity:.08;top:200px;right:30px; }
+    .orb-amber { width:500px;height:280px;background:#d97706;opacity:.09;top:950px;left:50%;transform:translateX(-50%); }
+    .orb-teal  { width:400px;height:240px;background:#0d9488;opacity:.09;top:1350px;left:50%;transform:translateX(-50%); }
+    .orb-red   { width:320px;height:200px;background:#dc2626;opacity:.07;top:1650px;left:50%;transform:translateX(-50%); }
+
+    /* HEADER */
+    .header { text-align:center; padding:60px 60px 30px; position:relative; z-index:2; }
+    .badge {
+      display:inline-block;
+      background:rgba(99,179,237,.1); border:1px solid rgba(99,179,237,.25); color:#63b3ed;
+      font-size:13px; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+      padding:9px 24px; border-radius:30px; margin-bottom:22px;
+    }
+    .header h1 { font-size:44px; font-weight:900; color:#fff; line-height:1.15; margin-bottom:10px; }
+    .header h1 span {
+      background:linear-gradient(135deg,#f59e0b,#f97316);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .header p { font-size:17px; color:rgba(255,255,255,.38); }
+
+    /* CONTENT */
+    .content { position:relative; z-index:2; padding:0 60px; }
+    .layer-label {
+      font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+      color:rgba(255,255,255,.18); margin-bottom:16px; padding-left:2px;
+    }
+
+    /* BROWSER WINDOWS */
+    .windows-row { display:flex; gap:32px; }
+    .bwin {
+      flex:1; background:rgba(255,255,255,.04);
+      border:1.5px solid rgba(255,255,255,.08); border-radius:18px;
+      overflow:hidden; backdrop-filter:blur(10px);
+    }
+    .bbar {
+      height:38px; background:rgba(255,255,255,.06);
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; align-items:center; padding:0 14px; gap:7px;
+    }
+    .dot { width:10px;height:10px;border-radius:50%; }
+    .dot.r{background:#ff5f56;} .dot.y{background:#ffbd2e;} .dot.g{background:#27c93f;}
+    .burl {
+      margin-left:10px; font-size:11px; color:rgba(255,255,255,.28);
+      background:rgba(0,0,0,.25); padding:3px 10px; border-radius:5px; font-family:monospace;
+    }
+    .bbody { padding:30px 20px; text-align:center; }
+    .bicon {
+      width:68px; height:68px; border-radius:50%; margin:0 auto 12px;
+      display:flex; align-items:center; justify-content:center; font-size:28px;
+      border:2px solid rgba(255,255,255,.12);
+    }
+    .bicon.user    { background:linear-gradient(145deg,#1e40af,#3b82f6); }
+    .bicon.saweria { background:linear-gradient(145deg,#92400e,#f59e0b); }
+    .bicon.xendit  { background:linear-gradient(145deg,#065f46,#10b981); }
+    .bname  { font-size:17px; font-weight:800; color:#fff; letter-spacing:1px; }
+    .blabel { font-size:12px; color:rgba(255,255,255,.32); margin-top:3px; }
+    .btag {
+      display:inline-block; margin-top:10px;
+      font-size:11px; font-weight:600; padding:4px 12px; border-radius:10px; letter-spacing:.4px;
+    }
+    .btag.blue  { background:rgba(59,130,246,.15); color:#93c5fd; border:1px solid rgba(93,173,246,.22); }
+    .btag.amber { background:rgba(245,158,11,.15);  color:#fcd34d; border:1px solid rgba(245,158,11,.22); }
+    .btag.green { background:rgba(16,185,129,.15);  color:#6ee7b7; border:1px solid rgba(16,185,129,.22); }
+
+    /* BACKEND BOX */
+    .backend-box {
+      background:linear-gradient(145deg,rgba(13,148,136,.12),rgba(13,148,136,.03));
+      border:2px solid rgba(13,148,136,.28); border-radius:22px;
+      padding:36px 36px; text-align:center; backdrop-filter:blur(10px); width: 50%; margin: 0 auto;
+    }
+    .be-icon  { font-size:38px; margin-bottom:8px; }
+    .be-title { font-size:24px; font-weight:800; color:#2dd4bf; letter-spacing:.5px; }
+    .be-sub   { font-size:13px; color:rgba(255,255,255,.3); margin-top:6px; font-family:monospace; }
+    .ep-tags  { display:flex; justify-content:center; gap:10px; margin-top:18px; flex-wrap:wrap; }
+    .ep {
+      font-size:12px; font-weight:700; padding:5px 14px; border-radius:10px; font-family:monospace;
+    }
+    .ep.wh { background:rgba(239,68,68,.12);  color:#fca5a5; border:1px solid rgba(239,68,68,.22); }
+    .ep.st { background:rgba(13,148,136,.12); color:#5eead4; border:1px solid rgba(13,148,136,.22); }
+    .ep.co { background:rgba(245,158,11,.12); color:#fde68a; border:1px solid rgba(245,158,11,.22); }
+
+    /* REDIS BOX */
+    .redis-box {
+      background:linear-gradient(145deg,rgba(220,38,38,.1),rgba(220,38,38,.03));
+      border:2px solid rgba(220,38,38,.25); border-radius:22px;
+      padding:32px 36px; text-align:center; backdrop-filter:blur(10px);
+    }
+    .rd-icon  { font-size:36px; margin-bottom:8px; }
+    .rd-title { font-size:22px; font-weight:800; color:#f87171; letter-spacing:.5px; }
+    .rd-sub   { font-size:12px; color:rgba(255,255,255,.28); margin-top:5px; font-family:monospace; }
+    .rd-kv {
+      margin-top:16px; display:inline-flex; align-items:center; gap:10px;
+      background:rgba(0,0,0,.3); border:1px solid rgba(220,38,38,.18);
+      padding:9px 22px; border-radius:12px;
+    }
+    .rd-key { font-size:14px; font-weight:700; color:#f87171; font-family:monospace; }
+    .rd-arr { font-size:14px; color:rgba(255,255,255,.22); }
+    .rd-val { font-size:14px; font-weight:700; color:#fcd34d; font-family:monospace; }
+    .rd-ttl { font-size:11px; color:rgba(255,255,255,.22); margin-top:8px; }
+
+    /* HOW IT WORKS */
+    .how-section { margin-top:64px; }
+    .sec-title {
+      font-size:12px; font-weight:700; color:rgba(255,255,255,.26);
+      letter-spacing:3px; text-transform:uppercase; margin-bottom:24px; text-align:center;
+    }
+    .how-cards { display:flex; gap:16px; }
+    .hcard {
+      flex:1; background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06); border-radius:18px;
+      padding:30px 20px; text-align:center; backdrop-filter:blur(5px);
+    }
+    .hicon { font-size:36px; margin-bottom:14px; }
+    .hcard h3 { font-size:15px; font-weight:700; color:#fff; line-height:1.35; }
+    .hval {
+      margin-top:10px; font-size:12px; font-weight:700;
+      padding:4px 13px; border-radius:8px; display:inline-block;
+    }
+    .hval.teal  { background:rgba(13,148,136,.12); color:#5eead4; border:1px solid rgba(13,148,136,.2); }
+    .hval.amber { background:rgba(245,158,11,.12);  color:#fde68a; border:1px solid rgba(245,158,11,.2); }
+
+    /* FOOTER */
+    .footer {
+      position:absolute; bottom:0; left:0; right:0;
+      padding:28px 60px; display:flex; justify-content:space-between; align-items:center;
+      z-index:2; border-top:1px solid rgba(255,255,255,.04);
+    }
+    .footer-l { font-size:13px; color:rgba(255,255,255,.18); }
+    .footer-r { display:flex; align-items:center; gap:8px; font-size:13px; color:rgba(255,255,255,.18); }
+    .fdot {
+      width:7px; height:7px; border-radius:50%; background:#2dd4bf;
+      animation:fpulse 2s ease-in-out infinite;
+    }
+    @keyframes fpulse { 0%,100%{opacity:.35} 50%{opacity:1} }
+
+    /* SVG OVERLAY */
+    .dsvg {
+      position:absolute; top:0; left:0;
+      width:1080px; height:1920px;
+      z-index:3; pointer-events:none;
+    }
+
+    /* ARROW LABELS — absolute, z-index above SVG */
+    .alayer {
+      position:absolute; top:0; left:0;
+      width:1080px; height:1920px;
+      z-index:12; pointer-events:none;
+    }
+    .alabel {
+      position:absolute;
+      font-size:12px; font-weight:700;
+      padding:5px 14px; border-radius:10px; white-space:nowrap;
+    }
+    .alabel.scan { background:rgba(8,12,28,.9); color:#93c5fd; border:1.5px solid rgba(99,179,237,.3); }
+    .alabel.wh   { background:rgba(8,12,28,.9); color:#fcd34d; border:1.5px solid rgba(245,158,11,.3); }
+    .alabel.poll { background:rgba(8,12,28,.9); color:#5eead4; border:1.5px solid rgba(13,148,136,.3); }
+    .alabel.ul   { background:rgba(8,12,28,.9); color:#6ee7b7; border:1.5px solid rgba(52,211,153,.35); }
+  </style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- GLOW ORBS -->
+  <div class="orb orb-blue"></div>
+  <div class="orb orb-green"></div>
+  <div class="orb orb-amber"></div>
+  <div class="orb orb-teal"></div>
+  <div class="orb orb-red"></div>
+
+  <!-- ══ SVG ARROWS ══
+       Layout positions (approximate, based on rendered DOM):
+       Header bottom     ≈ y=280
+       Windows top       ≈ y=330,  bottom ≈ y=610
+       Backend box top   ≈ y=830,  bottom ≈ y=1050  center-x=540
+       Redis box top     ≈ y=1130, bottom ≈ y=1330  center-x=540
+       Left loop x=60, Right loop x=1020
+  -->
+  <svg class="dsvg" viewBox="0 0 1080 1920">
+    <defs>
+      <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="glowS"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+
+    <!-- PATH 1: User (browser window center ~x=200) → Saweria (center ~x=540)
+         scan QR — arc turun dari browser ke saweria -->
+    <path id="p1" fill="none" stroke="rgba(99,179,237,.38)" stroke-width="2" stroke-dasharray="7 5"
+          d="M 200 610 C 200 700, 400 740, 540 800"/>
+    <polygon points="534,797 546,797 540,812" fill="#63b3ed" opacity=".7"/>
+    <circle r="6" fill="#63b3ed" filter="url(#glow)">
+      <animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#63b3ed" filter="url(#glow)" opacity=".55">
+      <animateMotion dur="2.4s" repeatCount="indefinite" begin="0.8s"><mpath href="#p1"/></animateMotion>
+    </circle>
+    <circle r="2.5" fill="#63b3ed" filter="url(#glow)" opacity=".3">
+      <animateMotion dur="2.4s" repeatCount="indefinite" begin="1.6s"><mpath href="#p1"/></animateMotion>
+    </circle>
+
+    <!-- PATH 2: Saweria (~x=540,y=800) → Xendit (~x=880,y=470)
+         horizontal curve ke kanan atas -->
+    <path id="p2" fill="none" stroke="rgba(245,158,11,.4)" stroke-width="2" stroke-dasharray="7 5"
+          d="M 680 470 C 760 470, 820 470, 878 470"/>
+    <polygon points="874,464 886,464 880,478" fill="#f59e0b" opacity=".7"/>
+    <circle r="5.5" fill="#f59e0b" filter="url(#glow)">
+      <animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#p2"/></animateMotion>
+    </circle>
+    <circle r="3.5" fill="#f59e0b" filter="url(#glow)" opacity=".5">
+      <animateMotion dur="1.8s" repeatCount="indefinite" begin="0.6s"><mpath href="#p2"/></animateMotion>
+    </circle>
+
+    <!-- PATH 3: Saweria (x=540,y=820) → Backend top (x=540,y=830)
+         webhook turun lurus -->
+    <path id="p3" fill="none" stroke="rgba(245,158,11,.42)" stroke-width="2.5" stroke-dasharray="7 5"
+          d="M 540 820 L 540 828"/>
+    <!-- visible long path for animation: saweria bottom to backend top -->
+    <path id="p3long" fill="none" stroke="rgba(245,158,11,.42)" stroke-width="2.5" stroke-dasharray="7 5"
+          d="M 540 810 L 540 1030"/>
+    <polygon points="534,1027 546,1027 540,1042" fill="#f59e0b" opacity=".7"/>
+    <circle r="6" fill="#fbbf24" filter="url(#glow)">
+      <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#p3long"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#fbbf24" filter="url(#glow)" opacity=".5">
+      <animateMotion dur="2s" repeatCount="indefinite" begin="0.65s"><mpath href="#p3long"/></animateMotion>
+    </circle>
+    <circle r="2.5" fill="#fbbf24" filter="url(#glow)" opacity=".28">
+      <animateMotion dur="2s" repeatCount="indefinite" begin="1.3s"><mpath href="#p3long"/></animateMotion>
+    </circle>
+
+    <!-- PATH 4: Backend bottom (x=540,y=1245) → Redis top (x=540,y=1280) -->
+    <path id="p4" fill="none" stroke="rgba(220,38,38,.4)" stroke-width="2" stroke-dasharray="5 5"
+          d="M 540 1245 L 540 1378"/>
+    <polygon points="534,1375 546,1375 540,1390" fill="#f87171" opacity=".7"/>
+    <circle r="5" fill="#f87171" filter="url(#glow)">
+      <animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#p4"/></animateMotion>
+    </circle>
+    <circle r="3" fill="#f87171" filter="url(#glow)" opacity=".45">
+      <animateMotion dur="1.6s" repeatCount="indefinite" begin="0.8s"><mpath href="#p4"/></animateMotion>
+    </circle>
+
+    <!-- PATH 5: Browser polling → Backend
+         Loop sisi KANAN: dari browser right (~x=960,y=470) turun ke backend right (~x=960,y=1140) lalu masuk backend -->
+    <path id="p5" fill="none" stroke="rgba(13,148,136,.38)" stroke-width="2" stroke-dasharray="5 5"
+          d="M 958 500 C 1020 500, 1020 1140, 958 1140"/>
+    <polygon points="954,1134 966,1134 960,1148" fill="#2dd4bf" opacity=".6"/>
+    <circle r="5" fill="#2dd4bf" filter="url(#glow)">
+      <animateMotion dur="3s" repeatCount="indefinite" begin="0.3s"><mpath href="#p5"/></animateMotion>
+    </circle>
+    <circle r="3.5" fill="#2dd4bf" filter="url(#glow)" opacity=".45">
+      <animateMotion dur="3s" repeatCount="indefinite" begin="1.5s"><mpath href="#p5"/></animateMotion>
+    </circle>
+
+    <!-- PATH 6: Backend → Browser unlock
+         Loop sisi KIRI: dari backend left (~x=120,y=1140) naik ke browser left (~x=120,y=500) -->
+    <path id="p6" fill="none" stroke="rgba(52,211,153,.5)" stroke-width="2.5" stroke-dasharray="7 5"
+          d="M 122 1140 C 60 1140, 60 500, 122 500"/>
+    <polygon points="118,494 130,494 124,508" fill="#34d399" opacity=".85"/>
+    <circle r="6" fill="#34d399" filter="url(#glowS)">
+      <animateMotion dur="3s" repeatCount="indefinite" begin="1s"><mpath href="#p6"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#34d399" filter="url(#glowS)" opacity=".55">
+      <animateMotion dur="3s" repeatCount="indefinite" begin="2s"><mpath href="#p6"/></animateMotion>
+    </circle>
+  </svg>
+
+  <!-- ══ ARROW LABELS ══ -->
+  <div class="alayer">
+    <!-- scan QR — kiri bawah browser -->
+    <div class="alabel scan" style="top:648px; left:68px;">1. Scan / klik QR</div>
+    <!-- proses QRIS — antara saweria & xendit -->
+    <div class="alabel wh" style="top:440px; left:694px;">2. Proses QRIS (Xendit)</div>
+    <!-- POST webhook — bawah saweria sebelum masuk backend -->
+    <div class="alabel wh" style="top:912px; left:558px;">3. POST /api/webhook</div>
+    <!-- setex redis -->
+    <div class="alabel wh" style="top:1296px; left:558px;">4. setex · TTL 3 min</div>
+    <!-- polling kanan -->
+    <div class="alabel poll" style="top:808px; right:28px;">5. GET /api/status · 3s</div>
+    <!-- unlock kiri -->
+    <div class="alabel ul" style="top:844px; left:28px;">6. content unlocked ✓</div>
+  </div>
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <div class="badge">Architecture · Useless CV</div>
+    <h1>🔓 <span>Saweria Donate to Unlock</span></h1>
+    <p>Bayar → Webhook → Redis → Polling → Unlock otomatis</p>
+  </div>
+
+  <!-- ══ CONTENT ══ -->
+  <div class="content">
+
+    <!-- USER LAYER — 3 windows -->
+    <div class="layer-label">User</div>
+    <div class="windows-row">
+      <div class="bwin">
+        <div class="bbar">
+          <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+          <div class="burl">cv-iwan.vercel.app</div>
+        </div>
+        <div class="bbody">
+          <div class="bicon user">👤</div>
+          <div class="bname">BROWSER</div>
+          <div class="blabel">index.html</div>
+          <div class="btag blue">Polling /api/status · 3s</div>
+        </div>
+      </div>
+      <div class="bwin">
+        <div class="bbar">
+          <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+          <div class="burl">saweria.co/iwanni</div>
+        </div>
+        <div class="bbody">
+          <div class="bicon saweria">💸</div>
+          <div class="bname">SAWERIA</div>
+          <div class="blabel">QR Static</div>
+          <div class="btag amber">Webhook → Vercel</div>
+        </div>
+      </div>
+      <div class="bwin">
+        <div class="bbar">
+          <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+          <div class="burl">xendit.co</div>
+        </div>
+        <div class="bbody">
+          <div class="bicon xendit">🏦</div>
+          <div class="bname">XENDIT</div>
+          <div class="blabel">Payment Gateway</div>
+          <div class="btag green">QRIS Processor</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKEND -->
+    <div style="margin-top:196px;">
+      <div class="layer-label">Backend · Vercel Serverless</div>
+      <div class="backend-box">
+        <div class="be-icon">⚡</div>
+        <div class="be-title">FastAPI · Python</div>
+        <div class="be-sub">Deployed on Vercel · Serverless Functions</div>
+        <div class="ep-tags">
+          <span class="ep wh">POST /api/webhook</span>
+          <span class="ep st">GET /api/status</span>
+          <span class="ep co">GET /api/content</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- REDIS -->
+    <div style="margin-top:60px;">
+      <div class="layer-label">Storage · Upstash Redis</div>
+      <div class="redis-box">
+        <div class="rd-icon">🗄️</div>
+        <div class="rd-title">Upstash Redis</div>
+        <div class="rd-sub">Free tier · 30.000 req/bulan · REST API</div>
+        <div class="rd-kv">
+          <span class="rd-key">cv_unlocked</span>
+          <span class="rd-arr">→</span>
+          <span class="rd-val">"1"</span>
+        </div>
+        <div class="rd-ttl">TTL 3 menit · auto-expire · 1 key only</div>
+      </div>
+    </div>
+
+    <!-- HOW IT WORKS — 3 cards only -->
+    <div class="how-section">
+      <div class="sec-title">Cara Kerja</div>
+      <div class="how-cards">
+        <div class="hcard">
+          <div class="hicon">📡</div>
+          <h3>Webhook Trigger</h3>
+          <div class="hval teal">POST dari Saweria</div>
+        </div>
+        <div class="hcard">
+          <div class="hicon">⏱️</div>
+          <h3>Auto Expire</h3>
+          <div class="hval amber">Redis TTL 3 menit</div>
+        </div>
+        <div class="hcard">
+          <div class="hicon">🔄</div>
+          <h3>Frontend Polling</h3>
+          <div class="hval teal">Setiap 3 detik</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-l">FastAPI · Upstash Redis · Vercel · Saweria Webhook</div>
+    <div class="footer-r">
+      <div class="fdot"></div>
+      <span>Polling interval — 3 detik</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
