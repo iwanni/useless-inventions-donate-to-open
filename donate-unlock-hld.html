@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,15 +52,44 @@
       opacity: 0.15;
     }
 
-    .glow-orb.orange { width: 350px; height: 350px; background: #f7931e; top: 250px; right: 50px; }
-    .glow-orb.blue { width: 400px; height: 400px; background: #2a5298; top: 200px; left: 50px; }
-    .glow-orb.teal { width: 450px; height: 350px; background: #4ecdc4; top: 750px; left: 50%; transform: translateX(-50%); }
-    .glow-orb.red { width: 350px; height: 350px; background: #ee5a52; bottom: 300px; left: 50%; transform: translateX(-50%); }
+    .glow-orb.orange {
+      width: 350px;
+      height: 350px;
+      background: #f7931e;
+      top: 250px;
+      right: 50px;
+    }
+
+    .glow-orb.blue {
+      width: 400px;
+      height: 400px;
+      background: #2a5298;
+      top: 200px;
+      left: 50px;
+    }
+
+    .glow-orb.teal {
+      width: 450px;
+      height: 350px;
+      background: #4ecdc4;
+      top: 750px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .glow-orb.red {
+      width: 350px;
+      height: 350px;
+      background: #ee5a52;
+      bottom: 300px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
 
     /* ===== HEADER ===== */
     .header {
       text-align: center;
-      padding: 80px 60px 40px;
+      padding: 110px 60px 20px;
       position: relative;
       z-index: 2;
     }
@@ -110,7 +140,7 @@
       text-align: center;
       backdrop-filter: blur(12px);
       z-index: 5;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     }
 
     .node-icon {
@@ -122,7 +152,7 @@
       align-items: center;
       justify-content: center;
       font-size: 32px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     }
 
     .node-title {
@@ -155,21 +185,77 @@
     }
 
     /* Node Themes */
-    .node.browser { top: 380px; left: 120px; width: 340px; }
-    .node.browser .node-icon { background: linear-gradient(135deg, #1e3c72, #2a5298); border: 1px solid #5b8dee; }
-    .node.browser .node-tag { background: rgba(91, 141, 238, 0.15); color: #5b8dee; border: 1px solid rgba(91, 141, 238, 0.3); }
+    .node.browser {
+      top: 310px;
+      left: 120px;
+      width: 340px;
+    }
 
-    .node.saweria { top: 380px; right: 120px; width: 340px; }
-    .node.saweria .node-icon { background: linear-gradient(135deg, #d35400, #f39c12); border: 1px solid #f1c40f; }
-    .node.saweria .node-tag { background: rgba(243, 156, 18, 0.15); color: #f39c12; border: 1px solid rgba(243, 156, 18, 0.3); }
+    .node.browser .node-icon {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      border: 1px solid #5b8dee;
+    }
 
-    .node.fastapi { top: 820px; left: 50%; transform: translateX(-50%); width: 420px; border-color: rgba(78, 205, 196, 0.3); background: rgba(78, 205, 196, 0.05); }
-    .node.fastapi .node-icon { background: linear-gradient(135deg, #0ba360, #3cba92); border: 1px solid #4ecdc4; }
-    .node.fastapi .node-tag { background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); }
+    .node.browser .node-tag {
+      background: rgba(91, 141, 238, 0.15);
+      color: #5b8dee;
+      border: 1px solid rgba(91, 141, 238, 0.3);
+    }
 
-    .node.redis { top: 1320px; left: 50%; transform: translateX(-50%); width: 380px; }
-    .node.redis .node-icon { background: linear-gradient(135deg, #cb2d3e, #ef473a); border: 1px solid #ee5a52; }
-    .node.redis .node-tag { background: rgba(238, 90, 82, 0.15); color: #ee5a52; border: 1px solid rgba(238, 90, 82, 0.3); }
+    .node.saweria {
+      top: 310px;
+      right: 120px;
+      width: 340px;
+    }
+
+    .node.saweria .node-icon {
+      background: linear-gradient(135deg, #d35400, #f39c12);
+      border: 1px solid #f1c40f;
+    }
+
+    .node.saweria .node-tag {
+      background: rgba(243, 156, 18, 0.15);
+      color: #f39c12;
+      border: 1px solid rgba(243, 156, 18, 0.3);
+    }
+
+    .node.fastapi {
+      top: 820px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 420px;
+      border-color: rgba(78, 205, 196, 0.3);
+      background: rgba(78, 205, 196, 0.05);
+    }
+
+    .node.fastapi .node-icon {
+      background: linear-gradient(135deg, #0ba360, #3cba92);
+      border: 1px solid #4ecdc4;
+    }
+
+    .node.fastapi .node-tag {
+      background: rgba(78, 205, 196, 0.15);
+      color: #4ecdc4;
+      border: 1px solid rgba(78, 205, 196, 0.3);
+    }
+
+    .node.redis {
+      top: 1240px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 380px;
+    }
+
+    .node.redis .node-icon {
+      background: linear-gradient(135deg, #cb2d3e, #ef473a);
+      border: 1px solid #ee5a52;
+    }
+
+    .node.redis .node-tag {
+      background: rgba(238, 90, 82, 0.15);
+      color: #ee5a52;
+      border: 1px solid rgba(238, 90, 82, 0.3);
+    }
 
 
     /* ===== SVG DIAGRAM ===== */
@@ -189,13 +275,35 @@
       stroke-dasharray: 8 6;
     }
 
-    .path-1 { stroke: rgba(243, 156, 18, 0.4); } /* Browser -> Saweria */
-    .path-2 { stroke: rgba(78, 205, 196, 0.4); } /* Saweria -> FastAPI */
-    .path-3 { stroke: rgba(238, 90, 82, 0.4); }  /* FastAPI -> Redis */
-    .path-4 { stroke: rgba(91, 141, 238, 0.4); } /* Browser -> FastAPI */
-    .path-5 { stroke: rgba(78, 205, 196, 0.6); } /* FastAPI -> Browser (Success) sdf */
+    .path-1 {
+      stroke: rgba(243, 156, 18, 0.4);
+    }
 
-    .arrowhead { opacity: 0.8; }
+    /* Browser -> Saweria */
+    .path-2 {
+      stroke: rgba(78, 205, 196, 0.4);
+    }
+
+    /* Saweria -> FastAPI */
+    .path-3 {
+      stroke: rgba(238, 90, 82, 0.4);
+    }
+
+    /* FastAPI -> Redis */
+    .path-4 {
+      stroke: rgba(91, 141, 238, 0.4);
+    }
+
+    /* Browser -> FastAPI */
+    .path-5 {
+      stroke: rgba(78, 205, 196, 0.6);
+    }
+
+    /* FastAPI -> Browser (Success) sdf */
+
+    .arrowhead {
+      opacity: 0.8;
+    }
 
     /* ===== ARROW LABELS ===== */
     .step-label {
@@ -207,7 +315,7 @@
       align-items: center;
       gap: 10px;
       z-index: 10;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     }
 
     .step-num {
@@ -229,30 +337,85 @@
     }
 
     /* Specific Label Colors & Positions */
-    .lbl-1 { top: 415px; left: 540px; transform: translateX(-50%); border: 1.5px solid rgba(243, 156, 18, 0.3); }
-    .lbl-1 .step-num { background: #f39c12; }
-    .lbl-1 .step-text { color: #f39c12; }
+    .lbl-1 {
+      top: 415px;
+      left: 540px;
+      transform: translateX(-50%);
+      border: 1.5px solid rgba(243, 156, 18, 0.3);
+    }
 
-    .lbl-2 { top: 680px; right: 280px; border: 1.5px solid rgba(78, 205, 196, 0.3); }
-    .lbl-2 .step-num { background: #4ecdc4; color: #000; }
-    .lbl-2 .step-text { color: #4ecdc4; }
+    .lbl-1 .step-num {
+      background: #f39c12;
+    }
 
-    .lbl-3 { top: 1160px; left: 540px; transform: translateX(-50%); border: 1.5px solid rgba(238, 90, 82, 0.3); }
-    .lbl-3 .step-num { background: #ee5a52; }
-    .lbl-3 .step-text { color: #ee5a52; }
+    .lbl-1 .step-text {
+      color: #f39c12;
+    }
 
-    .lbl-4 { top: 620px; left: 280px; border: 1.5px solid rgba(91, 141, 238, 0.3); }
-    .lbl-4 .step-num { background: #5b8dee; }
-    .lbl-4 .step-text { color: #5b8dee; }
+    .lbl-2 {
+      top: 680px;
+      right: 280px;
+      border: 1.5px solid rgba(78, 205, 196, 0.3);
+    }
 
-    .lbl-5 { top: 740px; left: 160px; border: 1.5px solid rgba(78, 205, 196, 0.6); background: rgba(78, 205, 196, 0.1); }
-    .lbl-5 .step-num { background: #4ecdc4; color: #000; }
-    .lbl-5 .step-text { color: #fff; }
+    .lbl-2 .step-num {
+      background: #4ecdc4;
+      color: #000;
+    }
+
+    .lbl-2 .step-text {
+      color: #4ecdc4;
+    }
+
+    .lbl-3 {
+      top: 1160px;
+      left: 540px;
+      transform: translateX(-50%);
+      border: 1.5px solid rgba(238, 90, 82, 0.3);
+    }
+
+    .lbl-3 .step-num {
+      background: #ee5a52;
+    }
+
+    .lbl-3 .step-text {
+      color: #ee5a52;
+    }
+
+    .lbl-4 {
+      top: 620px;
+      left: 280px;
+      border: 1.5px solid rgba(91, 141, 238, 0.3);
+    }
+
+    .lbl-4 .step-num {
+      background: #5b8dee;
+    }
+
+    .lbl-4 .step-text {
+      color: #5b8dee;
+    }
+
+    .lbl-5 {
+      top: 740px;
+      left: 160px;
+      border: 1.5px solid rgba(78, 205, 196, 0.6);
+      background: rgba(78, 205, 196, 0.1);
+    }
+
+    .lbl-5 .step-num {
+      background: #4ecdc4;
+      color: #000;
+    }
+
+    .lbl-5 .step-text {
+      color: #fff;
+    }
 
     /* ===== BOTTOM FEATURES ===== */
     .features {
       position: absolute;
-      bottom: 120px;
+      bottom: 280px;
       left: 60px;
       right: 60px;
       display: flex;
@@ -301,14 +464,41 @@
       border-top: 1px solid rgba(255, 255, 255, 0.04);
     }
 
-    .footer-left { font-size: 13px; color: rgba(255, 255, 255, 0.2); }
-    .footer-right { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255, 255, 255, 0.2); }
-    .footer-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ecdc4; animation: footerPulse 2s ease-in-out infinite; }
+    .footer-left {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.2);
+    }
 
-    @keyframes footerPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.2);
+    }
 
+    .footer-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4ecdc4;
+      animation: footerPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes footerPulse {
+
+      0%,
+      100% {
+        opacity: 0.4;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="poster">
     <!-- Ambient glows -->
@@ -322,7 +512,10 @@
       <defs>
         <filter id="glow">
           <feGaussianBlur stdDeviation="3" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
         </filter>
       </defs>
 
@@ -330,41 +523,55 @@
       <path id="path1" class="arrow-path path-1" d="M 460 455 L 620 455" />
       <polygon points="614,450 626,455 614,460" fill="#f39c12" class="arrowhead" />
       <circle r="5" fill="#f39c12" filter="url(#glow)">
-        <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#path1" /></animateMotion>
+        <animateMotion dur="2s" repeatCount="indefinite">
+          <mpath href="#path1" />
+        </animateMotion>
       </circle>
 
       <!-- 2. Saweria -> FastAPI (Webhook) -->
       <path id="path2" class="arrow-path path-2" d="M 790 560 C 790 680, 700 750, 600 820" />
       <polygon points="606,814 596,823 609,825" fill="#4ecdc4" class="arrowhead" />
       <circle r="6" fill="#4ecdc4" filter="url(#glow)">
-        <animateMotion dur="2.5s" repeatCount="indefinite"><mpath href="#path2" /></animateMotion>
+        <animateMotion dur="2.5s" repeatCount="indefinite">
+          <mpath href="#path2" />
+        </animateMotion>
       </circle>
       <circle r="4" fill="#4ecdc4" filter="url(#glow)" opacity="0.6">
-        <animateMotion dur="2.5s" repeatCount="indefinite" begin="1.2s"><mpath href="#path2" /></animateMotion>
+        <animateMotion dur="2.5s" repeatCount="indefinite" begin="1.2s">
+          <mpath href="#path2" />
+        </animateMotion>
       </circle>
 
       <!-- 3. FastAPI -> Redis (Set DB) -->
       <path id="path3" class="arrow-path path-3" d="M 540 1030 L 540 1320" />
       <polygon points="534,1314 546,1314 540,1326" fill="#ee5a52" class="arrowhead" />
       <circle r="5" fill="#ee5a52" filter="url(#glow)">
-        <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#path3" /></animateMotion>
+        <animateMotion dur="2s" repeatCount="indefinite">
+          <mpath href="#path3" />
+        </animateMotion>
       </circle>
 
       <!-- 4. Browser -> FastAPI (Polling) -->
       <path id="path4" class="arrow-path path-4" d="M 290 560 C 290 680, 400 750, 480 820" />
       <polygon points="471,825 484,823 474,814" fill="#5b8dee" class="arrowhead" />
       <circle r="5" fill="#5b8dee" filter="url(#glow)">
-        <animateMotion dur="3s" repeatCount="indefinite"><mpath href="#path4" /></animateMotion>
+        <animateMotion dur="3s" repeatCount="indefinite">
+          <mpath href="#path4" />
+        </animateMotion>
       </circle>
       <circle r="3" fill="#5b8dee" filter="url(#glow)" opacity="0.5">
-        <animateMotion dur="3s" repeatCount="indefinite" begin="1.5s"><mpath href="#path4" /></animateMotion>
+        <animateMotion dur="3s" repeatCount="indefinite" begin="1.5s">
+          <mpath href="#path4" />
+        </animateMotion>
       </circle>
 
       <!-- 5. FastAPI -> Browser (Unlock Response) -->
       <path id="path5" class="arrow-path path-5" d="M 440 820 C 340 750, 220 680, 220 560" />
       <polygon points="214,566 226,566 220,554" fill="#4ecdc4" class="arrowhead" />
       <circle r="6" fill="#fff" filter="url(#glow)">
-        <animateMotion dur="2s" repeatCount="indefinite" begin="0.5s"><mpath href="#path5" /></animateMotion>
+        <animateMotion dur="2s" repeatCount="indefinite" begin="0.5s">
+          <mpath href="#path5" />
+        </animateMotion>
       </circle>
     </svg>
 
@@ -469,13 +676,14 @@
     </div>
 
     <!-- FOOTER -->
-    <div class="footer">
+    <!-- <div class="footer">
       <div class="footer-left">Useless Inventions Series · High Level Design</div>
       <div class="footer-right">
         <div class="footer-dot"></div>
         <span>Serverless Architecture</span>
       </div>
-    </div>
+    </div> -->
   </div>
 </body>
+
 </html>
